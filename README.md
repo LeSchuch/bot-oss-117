@@ -1,6 +1,7 @@
 # BOT OSS 117
 
-Bot humoristique 🤖 Tweets générés automatiquement à partir des expressions des films OSS117.
+Bot humoristique 🤖 Tweets générés automatiquement à partir des expressions des films OSS117. 
+
 « C'est marrant, c'est toujours les bots qui ont le mauvais rôle. »
 
 ❤️ CaptainHook 🙏, Papa de @HubertDeLaBot
