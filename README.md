@@ -63,5 +63,5 @@ python3 bot.py
 
 ## Exemple
 
-![alt text](https://github.com/SchuchDev/bot-oss-117/blob/master/screenshot.png?raw=true)
+![alt text](https://github.com/SchuchDev/bot-oss-117/blob/master/media/screenshot.png?raw=true)
 
