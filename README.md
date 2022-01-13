@@ -7,27 +7,33 @@ Bot humoristique 🤖 Tweets générés automatiquement à partir des expression
 
 ## Installation
 
+Cloner le dépôt :
+
 ```bash
 git clone https://github.com/SchuchDev/bot-os-117
 cd bot-os-117
 ```
 
-Create a python virtual environment, and activate it:
+Créer un environnement python virtuel, et l'activer :
 
 ```bash
 virtualenv venv
 source venv/bin/activate
 ```
 
-Install python modules:
+Installer les dépendances python :
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Run script:
+Éxecuter le script :
 
 ```bash
 python3 main.py
 ```
+
+## Exemple
+
+![alt text](https://github.com/SchuchDev/bot-oss-117/blob/master/screenshot.png?raw=true)
 
