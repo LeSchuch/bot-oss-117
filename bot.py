@@ -187,6 +187,7 @@ if __name__ == "__main__":
             config["SENDER"],
             config["PASSWORD"],
             config["SMTP"],
+            config["SMTP_PORT"],
             config["RECEIVER"],
             subject,
             html,
