@@ -149,9 +149,6 @@ if __name__ == "__main__":
         ".env"
     )  # get TWITTER API keys, email credentials located in .env file
 
-    subject = "test"
-    html = "blabla"
-
     api = twitter.Api(
         consumer_key=config["CONSUMER_KEY"],
         consumer_secret=config["CONSUMER_SECRET"],
@@ -179,9 +176,13 @@ if __name__ == "__main__":
 
     except Exception as e:
 
-        print(e)
-        print("ERROR avec la recherche :" + blague.text_to_search + str(datetime.now()))
-        html = "Erreur avec le bot OSS. : " + str(e)
+        subject = "[BOT OSS 117] Error"
+        html = """
+                    ERROR with : {search}<br>
+                    Exception raised : {exception}
+               """.format(
+            serach=blague.text_to_search, exception=e
+        )
         send_email(
             config["SENDER"],
             config["PASSWORD"],
