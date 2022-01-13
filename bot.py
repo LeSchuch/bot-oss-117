@@ -1,49 +1,47 @@
-import twitter
-import time
-import random
-import smtplib
+from datetime import datetime
+from dotenv import dotenv_values
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from datetime import datetime, timedelta
-
-consumer_key = ""
-consumer_secret = ""
-access_token_key = ""
-access_token_secret = ""
-
-
-hours_to_add = timedelta(hours=2)
+import logging
+import os
+import random
+import smtplib
+import ssl
+import time
+import twitter
 
 
-api = twitter.Api(
-    consumer_key=consumer_key,
-    consumer_secret=consumer_secret,
-    access_token_key=access_token_key,
-    access_token_secret=access_token_secret,
-)
+def send_email(sender, password, smtp, smtp_port, receivers, subject, html, file=None):
 
+    message = MIMEMultipart("alternative")
+    message["Subject"] = subject
+    message["From"] = sender
+    message["To"] = ",".join(receivers.split(","))
 
-def send_an_error_mail(text):
+    # Add HTML parts to MIMEMultipart message
+    message.attach(MIMEText(html, "html"))
 
+    # Add file as attachment
+    if file:
+        with open(file, "rb") as f:
+            part = MIMEApplication(f.read(), Name="session.log")
+        part["Content-Disposition"] = "attachment; filename={0}".format("session.log")
+        message.attach(part)
+
+    # Create secure connection with server and send email
+    context = ssl.create_default_context()
     try:
-        mail = ""
-        msg = MIMEMultipart()
-        msg["From"] = mail
-        msg["To"] = mail
-        msg["Subject"] = "ERREUR BOT"
-        message = text
-        msg.attach(MIMEText(message))
-        mailserver = smtplib.SMTP("", 587)
-        mailserver.ehlo()
-        mailserver.starttls()
-        mailserver.ehlo()
-        mailserver.login(mail, "")
-        mailserver.sendmail(mail, mail, msg.as_string())
-        mailserver.quit()
-        print("Mail envoyé")
+        with smtplib.SMTP_SSL(smtp, smtp_port, context=context) as server:
+            server.ehlo()
+            server.login(sender, password)
+            for receiver in receivers.split(","):
+                server.sendmail(sender, receiver, message.as_string())
+        if file:
+            os.remove(file)
+        return True
     except Exception as e:
-        print(e)
-        print("Envoie du mail a échoué.")
+        # logging.exception("Exception raised", exc_info=e)
+        return False
 
 
 class Blague:
@@ -58,13 +56,13 @@ class Blague:
         self.media = m
         self.last_tweet_responded_id = 0
 
-    def search_the_last_tweet_related(self):
+    def search_the_last_tweet_related(self, user_id):
         search_results = api.GetSearch(
             term=self.text_to_search, count=30, result_type="mixed", lang="fr"
         )  # On charge les 30 derniers tweets/retweets liés à la recherche. On prend 30 pr être large
         for search in search_results:
             if (
-                search.retweeted_status == None and search.user.id != ""
+                search.retweeted_status == None and search.user.id != user_id
             ):  # Pour être sûr qu'on ne prend pas en compte les retweets & les tweets qu'on a nous même fait
                 return search
 
@@ -77,10 +75,7 @@ class Blague:
         # api.PostRetweet(tweet.id) #On retweet le tweet
 
 
-#####################################################################
-
-
-def main():
+def get_blagues():
 
     # La règle des mots clés : si jamais les mots doivent être collés dans le recherche, reajouter "". Exemple : '"Mots collés" au lieu de "Mots collés"
     # OR : '(a OR B)' va chercher a ou b
@@ -131,7 +126,7 @@ def main():
         "media/chaleur.jpg",
     )
 
-    blagues = [
+    return [
         millions,
         dictature,
         arabo,
@@ -147,78 +142,51 @@ def main():
         chaleur,
     ]
 
-    while True:
 
-        random_time = random.randint(3600, 5400)
-        has_this_blague_a_new_tweet_to_respond = False
+if __name__ == "__main__":
 
-        while has_this_blague_a_new_tweet_to_respond == False:
+    config = dotenv_values(
+        ".env"
+    )  # get TWITTER API keys, email credentials located in .env file
 
-            blague = random.choice(blagues)
+    subject = "test"
+    html = "blabla"
 
-            tweet_found = blague.search_the_last_tweet_related()
-            if tweet_found.id != blague.last_tweet_responded_id:
-                print(
-                    "Tweet trouvé pour cette recherche :  "
-                    + blague.text_to_search
-                    + " à "
-                    + str(datetime.now() + hours_to_add)
-                )
-                has_this_blague_a_new_tweet_to_respond = True  # it breaks
-            else:
-                print(
-                    "Tweet déjà répondu pour cette recherche : "
-                    + blague.text_to_search
-                    + " à "
-                    + str(datetime.now() + hours_to_add)
-                )
+    api = twitter.Api(
+        consumer_key=config["CONSUMER_KEY"],
+        consumer_secret=config["CONSUMER_SECRET"],
+        access_token_key=config["ACCESS_TOKEN_KEY"],
+        access_token_secret=config["ACCESS_TOKEN_SECRET"],
+    )  # connect to TWITTER
 
-        try:
+    blagues = get_blagues()
 
-            if (
-                datetime.now() + hours_to_add
-            ).hour >= 8:  # Ici on évite les tweets soient envoyés la nuit : les tweets peuvent que être envoyés seulement après 8h
-                blague.respond_to_a_tweet_and_retweet_the_answer(tweet_found)
-                blague.last_tweet_responded_id = tweet_found.id
-                print(
-                    "Tweet envoyé, prochain dans : "
-                    + str(random_time // 60)
-                    + "min à "
-                    + str(
-                        (
-                            datetime.now()
-                            + timedelta(seconds=random_time)
-                            + hours_to_add
-                        ).strftime("%H:%M")
-                    )
-                )
-            else:
-                print(str(datetime.now() + hours_to_add))
-                print(
-                    "C'est la nuit, on envoie pas. Prochain essai dans "
-                    + str(random_time // 60)
-                    + "min à "
-                    + str(
-                        (
-                            datetime.now()
-                            + timedelta(seconds=random_time)
-                            + hours_to_add
-                        ).strftime("%H:%M")
-                    )
-                )
+    has_this_blague_a_new_tweet_to_respond = False
+    while has_this_blague_a_new_tweet_to_respond == False:
 
-        except Exception as e:
-            print(e)
-            print(
-                "ERROR avec la recherche :"
-                + blague.text_to_search
-                + str(datetime.now())
-            )
-            send_an_error_mail("Erreur avec le bot OSS. : " + str(e))
+        blague = random.choice(blagues)
 
-        time.sleep(random_time)
+        tweet_found = blague.search_the_last_tweet_related(config["USER_ID"])
+        if tweet_found.id != blague.last_tweet_responded_id:
+            print("Tweet trouvé pour cette recherche :  " + blague.text_to_search)
+            has_this_blague_a_new_tweet_to_respond = True  # it breaks
 
+    try:
 
-#############################################################################
+        blague.respond_to_a_tweet_and_retweet_the_answer(tweet_found)
+        blague.last_tweet_responded_id = tweet_found.id
+        print("Tweet envoyé")
 
-main()
+    except Exception as e:
+
+        print(e)
+        print("ERROR avec la recherche :" + blague.text_to_search + str(datetime.now()))
+        html = "Erreur avec le bot OSS. : " + str(e)
+        send_email(
+            config["SENDER"],
+            config["PASSWORD"],
+            config["SMTP"],
+            config["RECEIVER"],
+            subject,
+            html,
+        )
