@@ -53,7 +53,7 @@ SMTP_PORT=
 RECEIVER=
 ```
 
-## Usage
+## Utilisation
 
 Éxecuter le script :
 
