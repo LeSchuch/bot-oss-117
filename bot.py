@@ -113,7 +113,6 @@ if __name__ == "__main__":
         access_token_key=ACCESS_TOKEN_KEY,
         access_token_secret=ACCESS_TOKEN_SECRET,
     )  # connect to TWITTER
-    random_time = random.randint(3600, 5400)
     blagues = get_blagues()
     has_this_blague_a_new_tweet_to_respond = False
     while has_this_blague_a_new_tweet_to_respond == False:
@@ -128,4 +127,3 @@ if __name__ == "__main__":
         print("Tweet envoyé")
     except Exception as e:
         print(e)
-    time.sleep(random_time)
