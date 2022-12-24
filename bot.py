@@ -1,47 +1,10 @@
 from datetime import datetime
-from dotenv import dotenv_values
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-import logging
-import os
+from settings import ACCESS_TOKEN_KEY, ACCESS_TOKEN_SECRET, CONSUMER_KEY, CONSUMER_SECRET, USER_ID
 import random
-import smtplib
-import ssl
 import time
 import twitter
-
-
-def send_email(sender, password, smtp, smtp_port, receivers, subject, html, file=None):
-
-    message = MIMEMultipart("alternative")
-    message["Subject"] = subject
-    message["From"] = sender
-    message["To"] = ",".join(receivers.split(","))
-
-    # Add HTML parts to MIMEMultipart message
-    message.attach(MIMEText(html, "html"))
-
-    # Add file as attachment
-    if file:
-        with open(file, "rb") as f:
-            part = MIMEApplication(f.read(), Name="session.log")
-        part["Content-Disposition"] = "attachment; filename={0}".format("session.log")
-        message.attach(part)
-
-    # Create secure connection with server and send email
-    context = ssl.create_default_context()
-    try:
-        with smtplib.SMTP_SSL(smtp, smtp_port, context=context) as server:
-            server.ehlo()
-            server.login(sender, password)
-            for receiver in receivers.split(","):
-                server.sendmail(sender, receiver, message.as_string())
-        if file:
-            os.remove(file)
-        return True
-    except Exception as e:
-        # logging.exception("Exception raised", exc_info=e)
-        return False
 
 
 class Blague:
@@ -144,51 +107,25 @@ def get_blagues():
 
 
 if __name__ == "__main__":
-
-    config = dotenv_values(
-        ".env"
-    )  # get TWITTER API keys, email credentials located in .env file
-
     api = twitter.Api(
-        consumer_key=config["CONSUMER_KEY"],
-        consumer_secret=config["CONSUMER_SECRET"],
-        access_token_key=config["ACCESS_TOKEN_KEY"],
-        access_token_secret=config["ACCESS_TOKEN_SECRET"],
+        consumer_key=CONSUMER_KEY,
+        consumer_secret=CONSUMER_SECRET,
+        access_token_key=ACCESS_TOKEN_KEY,
+        access_token_secret=ACCESS_TOKEN_SECRET,
     )  # connect to TWITTER
-
+    random_time = random.randint(3600, 5400)
     blagues = get_blagues()
-
     has_this_blague_a_new_tweet_to_respond = False
     while has_this_blague_a_new_tweet_to_respond == False:
-
         blague = random.choice(blagues)
-
-        tweet_found = blague.search_the_last_tweet_related(config["USER_ID"])
+        tweet_found = blague.search_the_last_tweet_related(USER_ID)
         if tweet_found.id != blague.last_tweet_responded_id:
             print("Tweet trouvé pour cette recherche :  " + blague.text_to_search)
             has_this_blague_a_new_tweet_to_respond = True  # it breaks
-
     try:
-
         blague.respond_to_a_tweet_and_retweet_the_answer(tweet_found)
         blague.last_tweet_responded_id = tweet_found.id
         print("Tweet envoyé")
-
     except Exception as e:
-
-        subject = "[BOT OSS 117] Error"
-        html = """
-                    ERROR with : {search}<br>
-                    Exception raised : {exception}
-               """.format(
-            serach=blague.text_to_search, exception=e
-        )
-        send_email(
-            config["SENDER"],
-            config["PASSWORD"],
-            config["SMTP"],
-            config["SMTP_PORT"],
-            config["RECEIVER"],
-            subject,
-            html,
-        )
+        print(e)
+    time.sleep(random_time)
