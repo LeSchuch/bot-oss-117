@@ -15,7 +15,7 @@ git clone https://github.com/SchuchDev/bot-os-117
 cd bot-os-117
 ```
 
-Créer un environnement python virtuel, et l'activer :
+Créer un environnement python virtuel, et l'activer:
 
 ```bash
 virtualenv venv
@@ -25,37 +25,27 @@ source venv/bin/activate
 Installer les dépendances python :
 
 ```bash
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 ```
 
 ## Configuration
 
-Créer un fichier ```.env``` et définissez les variables d'environnement :
+Compléter le fichier ```settings.py``` avec les variables globales:
 
 ```bash
 # TWITTER API KEYS
-
 CONSUMER_KEY=
 CONSUMER_SECRET=
 ACCESS_TOKEN_KEY=
 ACCESS_TOKEN_SECRET=
 
 # TWITTER USER ID
-
 USER_ID=
-
-# MAIL
-
-SENDER=
-PASSWORD=
-SMTP=
-SMTP_PORT=
-RECEIVER=
 ```
 
 ## Utilisation
 
-Éxecuter le script :
+Éxecuter le script:
 
 ```bash
 python3 bot.py
