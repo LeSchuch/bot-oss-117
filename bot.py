@@ -1,7 +1,14 @@
 from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from settings import ACCESS_TOKEN_KEY, ACCESS_TOKEN_SECRET, CONSUMER_KEY, CONSUMER_SECRET, USER_ID
+from settings import (
+    ACCESS_TOKEN_KEY,
+    ACCESS_TOKEN_SECRET,
+    CONSUMER_KEY,
+    CONSUMER_SECRET,
+    USER_ID,
+)
+import os
 import random
 import time
 import twitter
@@ -16,7 +23,7 @@ class Blague:
     def __init__(self, res, text, m):
         self.text_to_search = res
         self.text_to_write = text
-        self.media = m
+        self.media = f"{os.getcwd()}/{m}"
         self.last_tweet_responded_id = 0
 
     def search_the_last_tweet_related(self, user_id):
@@ -61,7 +68,9 @@ def get_blagues():
     massage = Blague("massage (envie OR besoin)", "", "media/massage.mp4")
     arretez = Blague("arrêtez", "C'EST TOI ARRÊTEZ", "media/arretez.jpg")
     chauve = Blague("chauve -souris", "Chauve qui peut !", "media/chauve.jpg")
-    # marginaux = Blague("(manifestation OR manif)", "Que veulent ces marginaux ?", "media/marginaux.jpg")
+    marginaux = Blague(
+        "(manifestation OR manif)", "Que veulent ces marginaux ?", "media/marginaux.jpg"
+    )
     noel = Blague(
         '"cadeau de noël" OR "cadeaux de noël" OR "bûche de noël" OR "guirelande de noël" OR "guirelandes de noël" OR "messe de noël"',
         "Il y a aussi les boules ...",
@@ -103,6 +112,7 @@ def get_blagues():
         poissoniere,
         pere,
         chaleur,
+        marginaux,
     ]
 
 
@@ -119,11 +129,9 @@ if __name__ == "__main__":
         blague = random.choice(blagues)
         tweet_found = blague.search_the_last_tweet_related(USER_ID)
         if tweet_found.id != blague.last_tweet_responded_id:
-            print("Tweet trouvé pour cette recherche :  " + blague.text_to_search)
             has_this_blague_a_new_tweet_to_respond = True  # it breaks
     try:
         blague.respond_to_a_tweet_and_retweet_the_answer(tweet_found)
         blague.last_tweet_responded_id = tweet_found.id
-        print("Tweet envoyé")
     except Exception as e:
         print(e)
